@@ -20,8 +20,13 @@ import FormError from "../form-error";
 import { useState, useTransition } from "react";
 import { login } from "@/actions/login";
 import FormSucces from "../form-succes";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const LoginForm = () => {
+  const searchParams=useSearchParams()
+  const urlError=searchParams.get("error") === "OAuthAccountNotLinked" ? "Email already in use with different provider!" :""; 
+  
   const [error,setError]=useState<string | undefined>("");
   const [success,setSuccess]=useState<string | undefined>("");
 
@@ -40,11 +45,12 @@ const LoginForm = () => {
     setSuccess("");
     startTransition(()=>{
         login(values).then((data)=>{
-          setError(data.error);
-          setSuccess(data.success);
+          setError(data?.error);
+          setSuccess(data?.success);
         })
     })
   };
+
   return (
     <CardWrapper
       headerLabel="Welcome Back"
@@ -52,6 +58,7 @@ const LoginForm = () => {
       backBtnHref="/auth/register"
       showSocial
     >
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
@@ -85,13 +92,16 @@ const LoginForm = () => {
                       type="password"
                     />
                   </FormControl>
+                  <Button size="sm" variant="link" asChild className="px-0 font-normal">
+                    <Link href="/auth/reset">Forgot Password!?</Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
 
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSucces message={success}/>
           <Button type="submit" className="w-full">
             Login
